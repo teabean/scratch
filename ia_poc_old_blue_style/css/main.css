@@ -1,0 +1,146 @@
+body {
+    font-family: "Roboto", sans-serif; 
+    margin-top:55px;
+    margin-bottom:55px; 
+    margin-left: 0px;
+    margin-right:0px;
+    
+    background-color:#CCC;    
+}
+
+header {
+    top:0px;
+    position:fixed;
+    background: -webkit-linear-gradient(top, rgba(125,126,125,1) 0%,rgba(14,14,14,1) 100%); 
+    color:white;
+    width:100%;
+    height: 50px;
+    border: 1px solid black;
+    font-weight:900;
+    font-size:2em;
+    
+    /* Chrome */
+    display: -webkit-flex;
+    -webkit-justify-content:center;
+    -webkit-align-items: center;
+    
+    
+    /* Safari*/
+    display: -webkit-box;
+    -webkit-box-pack: center;
+    -webkit-box-align: center;
+}
+
+#main {
+    height: 100%;
+}
+
+.betdatarow {  
+    background: -webkit-linear-gradient(top, rgba(178,225,255,1) 0%,rgba(102,182,252,1) 100%);
+  
+    border: 1px solid rgba(102,182,252,1);
+/*     border-radius: 5px; */
+    color:white;
+    /* padding:2%; */
+    margin-top: 5px;
+    margin-bottom:5px;
+    margin: 5px;
+    
+    /* Chrome */
+    display: -webkit-flex;
+    -webkit-flex-direction: rows;
+    -webkit-justify-content:center;
+    -webkit-align-items:center;
+    
+    /* Safari */
+    display: -webkit-box;
+    -webkit-box-orient: horizontal;
+    -webkit-box-pack: center;
+    -webkit-box-align: center;
+}
+
+.left {
+
+    font-size: 3em;
+    padding: 2%;
+    font-weight:400;
+    
+    /* Chrome */
+    display: -webkit-flex;
+    -webkit-flex-direction: column;
+    -webkit-justify-content: center;
+    -webkit-align-items: center;
+    
+    /* Safari */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-box-align: center;
+    
+    /* Safari */
+/*     The flex box amount seems to be based on content in the box and not available width :S */
+/*     -webkit-box-flex: 1; */
+/*     Cannot use a fixed width, the text will push off the side when the browser width is shrunk */
+    width:300px;
+}
+
+.bettype {
+    font-weight:100;
+    font-size:0.4em;
+    margin-top: -10px;
+}
+
+.right {
+    border-left: 1px solid rgba(102,182,252,1);
+    font-weight:100;
+    
+    /* Chrome */
+    -webkit-flex: 3 1 auto; /* Take up remaining room */
+    
+    /* Safari */
+    -webkit-box-flex: 3;
+}
+
+.description {
+    border-bottom: 1px solid rgba(178,225,255,1);
+    padding:1%;
+}
+
+.account {
+    border-bottom: 1px solid rgba(178,225,255,1);
+    font-weight:400;
+    padding:1%;
+}
+
+.potentialwin {
+    border-bottom: 1px solid rgba(178,225,255,1);
+    padding:1%;
+}
+
+.time {
+    color:grey;
+    font-size:0.9em;
+    text-align:right;
+    padding:1%;
+}
+
+/* Too narrow to support three columns */
+@media all and (max-width: 480px) {
+    .betdatarow  {
+        /* Chrome */
+        -webkit-flex-direction: column;
+
+    
+        /* Safari */
+        -webkit-box-orient: vertical;
+    } 
+
+    .right {
+        border-left: 0px; /* Remove the left hand border */
+        border-top: 1px solid rgba(102,182,252,1);
+    }
+    
+    .left {
+        width: 100%;
+    }
+
+}
