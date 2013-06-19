@@ -1,0 +1,101 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body { 
+    min-height: 100%; 
+    padding: 0px;
+}
+
+a { 
+    text-decoration: none; 
+}
+
+.main-header {
+  text-align: center;
+  color: white;
+  background-color: red;
+  position: fixed;
+  width: 100%;
+  left: 0;
+  transition: all 0.3s ease;
+  .toggle-menu {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    color: white;
+    font-size: 32px;
+    cursor: pointer;
+  }
+}
+
+.page-wrap {
+  float: right;
+  width: 100%;
+  transition: width 0.3s ease;
+}
+
+.main-nav-check {
+  display: none;
+}
+
+.main-nav {
+  position: fixed;
+  top: 0;
+  width: 0;
+  height: 100%;
+  background: #3B3B3B;
+  overflow: hidden;
+  transition: width 0.3s ease;
+  a {
+    display: block;
+    background: linear-gradient(#3E3E3E, #383838);
+    border-top: 1px solid #484848;
+    border-bottom: 1px solid #2E2E2E;
+    color: white;
+    padding: 15px;
+    &:hover, &:focus {
+      background: linear-gradient(#484848, #383838);
+    }
+  }
+  
+  &:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 34px;
+    background: linear-gradient(left, rgba(black, 0), rgba(black, 0.4));
+  }
+}
+
+.content {
+  padding: 100px 0px 0px 0px;
+}
+
+.close-menu {
+  display: none;
+}
+
+#main-nav-check:checked + #main-nav {
+  width: 30%;
+  overflow: scroll;
+}
+
+#main-nav-check:checked ~ .page-wrap {
+  width: 70%;
+  
+  .open-menu {
+     display: none; 
+  }
+  
+  .close-menu {
+     display: block;
+  }
+  
+  .main-header {
+    width: 80%;
+    left: 20%;
+  }
+}
