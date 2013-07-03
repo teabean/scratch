@@ -11,15 +11,23 @@
     <link rel="stylesheet" href="css/animate.css" />
 </head>
 <body>  
-    <header>
-        <a href="#" id="snap-button"></a>
-        <section id="headerlabel">Instant Action</section>
-        <button  title="Insert elements at random time (0-1500ms). Uses Mustache to create element. (Max 500 elements)" id="mustache_populate">Start Mustache Populate</button>
-        <button title="Insert elements at random time (0-1500ms). Uses hardcoded HTML for element. (Max 500 elements)"id="html_populate">Start HTML Populate</button>
-    </header>
-        
-    <section id="content"> 
-        
+    <input type="checkbox" class="main-nav-check" id="main-nav-check"/>
+    
+    <nav class="main-nav" id="main-nav">
+        <button  title="Fetch latest bets" id="fetch_bets">Fetch Bets</button>
+        <button id="hide_bets">Hide bets</button>
+    </nav>
+    
+    <section class="page-wrap">
+        <header>
+            <label for="main-nav-check" class="toggle-menu">☰</label>
+            <section id="headerlabel">Instant Action</section>
+            <section id="abp_toolbar"></section>
+        </header>
+            
+        <section id="content"> 
+            
+        </section>
     </section>
     
     <!-- Load require, trigger it to load box.js, tells require to look in the js folder for any files we ask for -->

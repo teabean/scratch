@@ -1,141 +1,138 @@
-define(["jquery", "mustache", "text!../templates/box_template.html"], function($, mustache, template) {
+define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], function(jQuery, mustache, template, abpify) {
+    ABPIFY.init("CHNXh3w4uNTWiSVZdHTEQTCvpdHPvXC6NK2DlWKgH2CyqC3v6N4f-9vMvFUMPc_1MF9C7RhlFZF14GUP5SuJ2A==");
+    $("#abp_toolbar").abpify({showDebug: true});
+    
     var content = $("#content");
-    
-    $(window).scroll(function(eventObject) {
-        // do stuff! You can find out about how far the window has scrolled via the eventObject.
-/*         console.log(eventObject); */
-    });
-    
+    var hideBets = false;
     var running_mustache = false;
-    var running_html = false;
+    var fromKey = -1;
     
-    $("#mustache_populate").click(function() {
-        var i = 0;
-        
-        if (running_mustache) {
-            running_mustache = false;
-            $("#mustache_populate").text("Start Mustache Populate");
-            i = 0;
-        } else {
-            content.empty();
-            running_mustache = true;
-            runnning_html = false;
-            $("#mustache_populate").text("Stop Mustache Populate");
-            
-            setTimeout(function() {
-                i++;
-                if (running_mustache) {
-                    mustache_add_box();
-                    setTimeout(arguments.callee, Math.random() * 1500);
-                } 
-                
-                if (i > 500) {
-                    // Remove the last box, we are at our limit
-                    $("#content .box").last().remove();
-                }
-                
-            }, 500);
-        }
-    }); 
-    
-    var mustache_add_box = function() {
-        $.getJSON("json/test.js", function(data) {
-            var test_data = data.mydata[Math.floor(Math.random() * data.mydata.length)];
-            console.log(test_data);
-            
-            var type = test_data.type;
-            var gradient = null;
-            switch (type) {
-                case "bet":
-                    gradient = "bggold";
-                    break;
-                case "new_account":
-                    gradient = "bggreen";
-                    break;
-                case "failed_bet":
-                    gradient = "bgred";
-                    break;
-                case "payrec" :
-                    gradient = "bgbronze";
-                    break;
-            }
-/*             gradient_array[Math.floor(Math.random() * gradient_array.length)]; */
-            var amount = Math.floor(Math.random() * 100);
-            
-            var bet_create_date = new Date();
-            var time = new Date();
-            
-            var result = mustache.render(template, { 
-                "background_gradient" : gradient,
-                "left_content" : "£" + amount + ".00", 
-                "left_sub_label" : type === "bet" ? test_data.bet_type : type, 
-                "account_description" : test_data.account_description, 
-                "account_username" : test_data.username,
-                "account_number" : test_data.account_number,
-                "description" : test_data.description,
-                "right_footer_left" : "Potential Win £" + (amount * 3) + ".00",
-                "right_footer_middle" : "Total Stake £" + amount + ".00",
-                "right_footer_right" : time          
-            });
-            
-            content.prepend(result);
-            
-            // This kills it.
-    /*         animate($("#content .box").first(), "animated bounceInLeft"); */
-            
-            var justAdded = $("#content .box").first();
-            var timeSection = justAdded.find(".right_footer_right");
-/*             justAdded.attr("id", time.getTime()); */
-            
-            // We can add the json data to the added item for future reference
-            justAdded.data("data", test_data);
-            
-            window.setTimeout(function() {
-                var date = new Date();
-                var seconds = Math.round((date.getTime() - bet_create_date.getTime()) / 1000);
-                var minutes = 59;
-                
-                var prettyDate = seconds + "s ago";
-                
-                // We can play with this timeout to make things easier on the cpu
-                var newTimeout = 15000;
-                
-                if (seconds > 59) {
-                  minutes = Math.floor(seconds / 60);
-                  prettyDate = minutes + "m ago";
-                  newTimeout = 20000;
-                }  
-                
-                if (minutes > 59 && seconds > 59) {
-                  var hours = Math.floor(minutes / 60);
-                  prettyDate = hours + "h ago";
-                  newTimeout = 60000;
-                }
-          
-                timeSection.html("About " + prettyDate);
-                setTimeout(arguments.callee, newTimeout);
-            }, 0);
-            
-            justAdded.click(function() {
-                console.log(justAdded.data("data").username); 
-            });
+    $("#fetch_bets").click(function() {
+		ABPIFY.ajax("GET", "/rest/instantaction?fromKey=" + fromKey + "&type=BETS", null, function(data) {
+			if (data) {
+			    fromKey = data.lastKey;
+			    for (var i = 0; i < data.betList.length; i++) {
+    			    console.log(data.betList[i]);
+    			    add_box(data.betList[i]);
+			    }
+			}
+		});
+	});
+	
+	var add_box = function(data) {
+        var type = "bet";
+        data.type = type;
+        var amount = data.unitStake;
 
-        });
-    
-    };
-    
-    // Perform the given css animation on the given element. Once complete we remove the css animation so the element can be animated again later if we need.
-    function animate(element, animation) {
-        element.addClass(animation);
+        // Get the colour for the left hand box
+        var gradient = null;
+        switch (type) {
+            case "bet":
+                if (amount < 5.01) {
+                    gradient = "bgpink";
+                } else if (amount < 15.01) {
+                    gradient = "bglightblue2";
+                } else if (amount < 25.01) {
+                    gradient = "bgorangey";
+                } else {
+                    gradient = "bggold";
+                }
+                break;
+            case "new_account":
+                gradient = "bggreen";
+                break;
+            case "failed_bet":
+                gradient = "bgred";
+                break;
+            case "payrec" :
+                gradient = "bgbronze";
+                break;
+        }
+
         
-        // Can't call clearAnimation here as browser caches styling changes until the js has finished executing and then performs them in one go. 
-        // So we end up seeing no animation. Instead we can check once the animation has finished and then remove the animation classes.
-        element.on("webkitAnimationEnd", function() {
-            // Note this is only for webkit (Not that we are worried about anything but webkit, other browsers use different names e.g. oanimationend for Opera)
-            clearAnimation(element, animation);
+        // Use Mustache to populate the template
+        var result = mustache.render(template, { 
+            "background_gradient" : gradient,
+            "left_content" : type !== "new_account" ? "£" + amount : "New", 
+            "left_sub_label" : type === "bet" ? data.transactionSubTypeId : type === "new_account" ? "Account" : test_data.type_description, 
+            "account_description" : data.accountDescription, 
+            "account_username" : data.account.userName,
+            "account_number" : data.accountNumber,
+            "description" : data.description,
+            "right_footer_left" : type === "bet" ? "Potential Win £" + data.potentialWin : "",
+            "right_footer_middle" : type === "bet" ? "Total Stake £" + data.betTotalCost : "",
+            "right_footer_right" : ""          
         });
-    }
-    
-    var gradient_array = ["bglightblue", "bglightblue2", "bggold", "bgpink", "bgbronze", "bgorangey"];
+        
+        // Add the result to the page
+        content.prepend(result);
+        
+        // Now start calculating the time since the item was created
+        var justAdded = $("#content .box").first();
+        var timeSection = justAdded.find(".right_footer_right");
+        var bet_create_date = data.createDate;
+
+        justAdded.data("data", data);
+            
+        window.setTimeout(function() {
+            var date = new Date();
+            var seconds = Math.round((date.getTime() - new Date(bet_create_date).getTime()) / 1000);
+            // If date is from json --> new Date(bet_create_date).getTime()
+            var minutes = 59;
+            
+            var prettyDate = seconds + "s ago";
+            
+            // We can play with this timeout to make things easier on the cpu
+            var newTimeout = 15000;
+            
+            if (seconds > 59) {
+              minutes = Math.floor(seconds / 60);
+              prettyDate = minutes + "m ago";
+              newTimeout = 20000;
+            }  
+            
+            if (minutes > 59 && seconds > 59) {
+              var hours = Math.floor(minutes / 60);
+              prettyDate = hours + "h ago";
+              newTimeout = 60000;
+            }
+      
+            timeSection.html("About " + prettyDate);
+            setTimeout(arguments.callee, newTimeout);
+        }, 0);
+        
+        // Example of reading back data at a later stage
+        justAdded.click(function() {
+            console.log(justAdded.data("data").account.userName); 
+        });
+
+        // If it's a bet, should we be displaying it?
+        if (hideBets && type === "bet") {
+            justAdded.hide();
+        }
+
+	}
+	
+    $("#hide_bets").click(function() {
+        if (hideBets) {
+            hideBets = false;
+            $("#hide_bets").text("Hide Bets");
+        } else {
+            hideBets = true;
+            $("#hide_bets").text("Show Bets");
+        }
+
+        $("#content .box").each(function() {
+            var type = $(this).data("data").type;
+            
+            if (type === "bet") {
+                if (hideBets) {
+                    $(this).hide();
+                } else {
+                    $(this).show();
+                }
+            } 
+        });
+    });
 });
 

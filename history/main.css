@@ -1,0 +1,22 @@
+#box {
+    height: 100px;
+    width: 100px;
+    border: 1px solid black;
+    margin: 15px;
+}
+
+a {
+    link: red;
+}
+
+.red {
+    background-color: red;
+}
+
+.blue {
+    background-color: blue;
+}
+
+.green {
+    background-color: green;
+}
