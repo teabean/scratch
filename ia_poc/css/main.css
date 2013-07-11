@@ -40,6 +40,11 @@ body {
   }
 }
 
+button {
+    padding: 5px;
+    width: 100%;
+}
+
 .page-wrap {
     float: right;
     width: 100%;

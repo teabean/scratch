@@ -11,11 +11,18 @@
     <link rel="stylesheet" href="css/animate.css" />
 </head>
 <body>  
+    <!-- Hidden checkbox that we use to determine if the menu is visible or not -->
     <input type="checkbox" class="main-nav-check" id="main-nav-check"/>
     
     <nav class="main-nav" id="main-nav">
-        <button  title="Fetch latest bets" id="fetch_bets">Fetch Bets</button>
         <button id="hide_bets">Hide bets</button>
+        <br>
+        <br>
+        <button id="auto_fetch">Start Auto Fetch</button>
+        <input type="checkbox" id="bets">Bets</input>
+        <input type="checkbox" id="new_accounts">New Accounts</input>
+        <input type="checkbox" id="payrecs">Payrecs</input>
+        <input type="checkbox" id="failed_bets">Failed Bets</input>
     </nav>
     
     <section class="page-wrap">
