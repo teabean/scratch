@@ -17,7 +17,7 @@ body {
   width: 0;
   height: 100%;
   background: #3B3B3B;
-  overflow: hidden;
+  overflow: scroll;
   -webkit-transition: width 0.3s ease;
   transition: width 0.3s ease;
 }
@@ -43,6 +43,60 @@ body {
 button {
     padding: 5px;
     width: 100%;
+}
+
+.accordionButton {
+    width: 100%;
+    background-color: #333;
+    border-bottom: 1px solid rgba(255,255,255,0.91)
+}
+
+.nav-label {
+    font-weight: 100;
+    color: white;
+    margin-left: 15px;
+}
+
+#stake-range {
+    margin: 0px 15px;
+    background-color: #333;
+
+    /* Chrome */
+    display: -webkit-flex;
+    -webkit-flex-direction: rows;
+    -webkit-justify-content: center;
+    -webkit-align-items: center;
+    /* Safari */
+    display: -webkit-box;
+    -webkit-box-orient: horizontal;
+    -webkit-box-pack: stretch;
+    -webkit-box-align: stretch;
+}
+
+#min-stake {
+    width: 45%;
+}
+
+#max-stake {
+    width: 45%;
+}
+
+#sports {
+    background-color: #333;
+    margin: 0px 15px;
+}
+
+.double-column {
+    /* Chrome */
+    display: -webkit-flex;
+    -webkit-flex-direction: rows;
+    -webkit-justify-content: center;
+    -webkit-align-items: center;
+    /* Safari */
+    display: -webkit-box;
+    -webkit-box-orient: horizontal;
+    -webkit-box-pack: stretch;
+    -webkit-box-align: stretch;
 }
 
 .page-wrap {
@@ -87,3 +141,122 @@ header {
     margin-top: -5px;
     padding: 5px;
 }
+
+/* Custom Checkbox styling */
+
+/**
+ * Start by hiding the checkboxes
+ */
+input[type=checkbox] {
+	visibility: hidden;
+}
+
+/**
+ * Big Checkbox
+ */
+.checkbox {
+	width: 120px;
+	height: 40px;
+	background: #333;
+	margin: 0px 0px 8px 5px;
+	border-radius: 50px;
+	position: relative;
+}
+
+/**
+ * Create the text for the On position
+ */
+.checkbox:before {
+	content: 'On';
+	position: absolute;
+	top: 10px;
+	left: 13px;
+	height: 2px;
+	color: #26ca28;
+	font-size: 1em;
+	font-weight: 200;
+}
+
+/**
+ * Create the label for the off position
+ */
+.checkbox:after {
+	content: 'Off';
+	position: absolute;
+	top: 10px;
+	left: 84px;
+	height: 2px;
+	color: white;
+	font-size: 1em;
+	font-weight: 200;
+}
+
+/**
+ * Create the pill to click
+ */
+.checkbox label {
+	display: block;
+	width: 52px;
+	height: 22px;
+	border-radius: 50px;
+	-webkit-transition: all .5s ease;
+	-moz-transition: all .5s ease;
+	-o-transition: all .5s ease;
+	-ms-transition: all .5s ease;
+	transition: all .5s ease;
+	cursor: pointer;
+	position: absolute;
+	top: 9px;
+	z-index: 1;
+	left: 12px;
+	background: #ddd;
+}
+
+/**
+ * Create the checkbox event for the label
+ */
+.checkbox input[type=checkbox]:checked + label {
+	left:60px;
+	background: #26ca28;
+}
+
+/**
+ * Mini checkbox Create the slider bar
+ */
+.checkboxMini {
+	width: 40px;
+	height: 10px;
+	background: #555;
+	margin: 5px 3px;
+	position: relative;
+	border-radius: 3px;
+}
+
+/**
+ * Create the slider from the label
+ */
+.checkboxMini label {
+	display: block;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	-webkit-transition: all .5s ease;
+	-moz-transition: all .5s ease;
+	-o-transition: all .5s ease;
+	-ms-transition: all .5s ease;
+	transition: all .5s ease;
+	cursor: pointer;
+	position: absolute;
+	top: -3px;
+	left: -3px;
+	background: #ccc;
+}
+
+/**
+ * Move the slider in the correct position if the checkbox is clicked
+ */
+.checkboxMini input[type=checkbox]:checked + label {
+	left: 27px;
+    background: #26ca28;
+}
+

@@ -14,15 +14,101 @@
     <!-- Hidden checkbox that we use to determine if the menu is visible or not -->
     <input type="checkbox" class="main-nav-check" id="main-nav-check"/>
     
+    <!-- Slide out Menu -->
     <nav class="main-nav" id="main-nav">
-        <button id="hide_bets">Hide bets</button>
-        <br>
-        <br>
         <button id="auto_fetch">Start Auto Fetch</button>
-        <input type="checkbox" id="bets">Bets</input>
-        <input type="checkbox" id="new_accounts">New Accounts</input>
-        <input type="checkbox" id="payrecs">Payrecs</input>
-        <input type="checkbox" id="failed_bets">Failed Bets</input>
+        
+        <!-- Filters -->
+        <div class="accordionButton">
+            <label class="nav-label">Filters</label>
+        </div>
+        
+        <div class="accordionContent" id="filter">
+            <!-- Bets Checkbox -->
+            <section>
+                <label class="nav-label">Bets</label>
+                <div class="checkbox">
+              		<input type="checkbox" value="1" id="bets-check" name="" />
+            	  	<label for="bets-check"></label>
+              	</div>
+            </section>
+            
+            <!-- New Accounts Checkbox -->
+            <section>
+                <label class="nav-label">New Accounts</label>
+                <div class="checkbox">
+              		<input type="checkbox" value="1" id="accounts-check" name="" />
+            	  	<label for="accounts-check"></label>
+              	</div>
+            </section>
+            
+            <!-- Payrecs Checkbox -->
+            <section>
+                <label class="nav-label">Payrecs</label>
+                <div class="checkbox">
+              		<input type="checkbox" value="1" id="payrecs-check" name="" />
+            	  	<label for="payrecs-check"></label>
+              	</div>
+            </section>
+            
+            <!-- Failed Bets Checkbox -->
+            <section>
+                <label class="nav-label">Failed Bets</label>
+                <div class="checkbox">
+              		<input type="checkbox" value="1" id="failed-bets-check" name="" />
+            	  	<label for="failed-bets-check"></label>
+              	</div>
+            </section>
+            
+            <!-- Bet Stake filter -->
+            <section id="stake-range-section">
+                <label class="nav-label">Bet Unit Stake Range</label>
+                <section id="stake-range">
+                    <input type="number" min="0" id="min-stake"/>
+                    <input type="number" min="1" id="max-stake"/>
+                </section>
+            </section>
+            
+            <!-- Sports -->
+            <section id="sports-section">
+                <label class="nav-label">Bet Sports</label>
+                <section id="sports">
+                </section>
+            </section>
+        </div>
+        
+        <!-- Settings -->
+        <div class="accordionButton">
+            <label class="nav-label">Settings</label>
+        </div>
+        
+        <div class="accordionContent" id="settings">
+            <section id="settings">
+                <!-- Username checkbox -->
+                <section class="double-column">
+                    <div class="checkboxMini">
+                        <input type="checkbox" value="1" id="showUserName" name="" />
+                        <label for="showUserName"></label>
+                    </div>
+                    <label class='nav-label'>Show Username</label>
+                </section>
+                
+                <!-- Account number checkbox -->
+                <section class="double-column">
+                    <div class="checkboxMini">
+                        <input type="checkbox" value="1" id="showAccountNumber" name="" />
+                        <label for="showAccountNumber"></label>
+                    </div>
+                    <label class='nav-label'>Show Account Number</label>
+                </section>
+                
+                <!-- Max rows -->
+                <section class="double-column">
+                    <input type="number" />
+                    <label class="nav-label"> Max. Rows</label>
+                </section>
+            </section>
+        </div>
     </nav>
     
     <section class="page-wrap">
@@ -33,12 +119,14 @@
         </header>
             
         <section id="content"> 
-            
+            <!-- Boxes go in here -->
         </section>
     </section>
     
-    <!-- Load require, trigger it to load box.js, tells require to look in the js folder for any files we ask for -->
-        <script src="js/requireconfig.js"></script>
-        <script src="js/require.js" data-main="js/main.js"></script>
+    <script src="js/jquery-1.9.1.js"></script>
+    
+    <!-- Use require to load js that we need -->
+    <script src="js/requireconfig.js"></script>
+    <script src="js/require.js" data-main="js/main.js"></script>
 </body>
 </html>

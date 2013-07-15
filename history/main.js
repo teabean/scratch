@@ -45,5 +45,6 @@ window.onload = function() {
     // When the back button is selected we take the previous url and put it through our change colour function.
     window.addEventListener("popstate", function(e) {
         changeColour(location.href);
+        console.log(location.search);
     });
 };
