@@ -99,6 +99,10 @@ button {
     -webkit-box-align: stretch;
 }
 
+#settings {
+    margin: 5px;
+}
+
 .page-wrap {
     float: right;
     width: 100%;

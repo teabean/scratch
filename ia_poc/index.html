@@ -16,8 +16,6 @@
     
     <!-- Slide out Menu -->
     <nav class="main-nav" id="main-nav">
-        <button id="auto_fetch">Start Auto Fetch</button>
-        
         <!-- Filters -->
         <div class="accordionButton">
             <label class="nav-label">Filters</label>
@@ -87,8 +85,8 @@
                 <!-- Username checkbox -->
                 <section class="double-column">
                     <div class="checkboxMini">
-                        <input type="checkbox" value="1" id="showUserName" name="" />
-                        <label for="showUserName"></label>
+                        <input type="checkbox" value="1" id="showUsername" name="" />
+                        <label for="showUsername"></label>
                     </div>
                     <label class='nav-label'>Show Username</label>
                 </section>
@@ -104,7 +102,7 @@
                 
                 <!-- Max rows -->
                 <section class="double-column">
-                    <input type="number" />
+                    <input type="number" min="1" max="500" id="max-rows"/>
                     <label class="nav-label"> Max. Rows</label>
                 </section>
             </section>

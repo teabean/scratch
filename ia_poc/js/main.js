@@ -1,9 +1,12 @@
 define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], function(jQuery, mustache, template, abpify) {
     ABPIFY.init("CHNXh3w4uNTWiSVZdHTEQTCvpdHPvXC6NK2DlWKgH2CyqC3v6N4f-9vMvFUMPc_1MF9C7RhlFZF14GUP5SuJ2A==");
     $("#abp_toolbar").abpify({showDebug: true});
+    
+    var boxCount = 0;
 
     var query_params = getQueryParams(document.location.search);
     setupFilters(query_params);
+    setupSettings();
     
     function getQueryParams(qs) {
         qs = qs.split("+").join(" ");
@@ -128,6 +131,19 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
         
         return result;
     }
+    
+    // Look up settings from local storage
+    function setupSettings() {
+        var showUsername = localStorage.getItem("showUsername");
+        var showAccountNumber = localStorage.getItem("showAccountNumber");
+        
+        $("#showUsername").prop("checked", showUsername == null ? true : showUsername === "true");
+        $("#showAccountNumber").prop("checked", showAccountNumber == null ? true : showAccountNumber === "true");
+        
+        var maxRows = localStorage.getItem("maxRows");
+        maxRows = maxRows == null ? 500 : maxRows; // Default to 500
+        $("#max-rows").val(maxRows);
+    }
 
     // Look up content section to save having to search through the html everytime
     var content = $("#content");
@@ -140,48 +156,36 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
     var betSlipsFromKey = -1;
     
     // Fetch Instant Action Data
-    var isAutoFetching = false;
     var autoFetchMillis = 5000;
-    var fetchInterval = null;
     
-    $("#auto_fetch").click(function() {
-        if (isAutoFetching) {
-            isAutoFetching = false;
-            $("#auto_fetch").text("Start Auto Fetch");
-            window.clearInterval(fetchInterval);
-        } else {
-            isAutoFetching = true;
-            $("#auto_fetch").text("Stop Auto Fetch");
-            
-            fetchInterval = window.setInterval(function () {
-                ABPIFY.ajax("GET", "/rest/instantaction?fromKey=" + -1 + "&type=ALL&betsFromKey=" + betsFromKey + "&accountsFromKey=" + accountsFromKey + "&failedBetsFromKey=" + failedBetsFromKey + "&transactionsFromKey=" + payrecsFromKey + "&betSlipsFromKey=" + betSlipsFromKey, null, function(data) {
-    			if (data) {
-                    betsFromKey = data.lastBetsKey;
-                    accountsFromKey = data.lastAccountsKey;
-                    failedBetsFromKey = data.lastFailedBetsKey;
-                    payrecsFromKey = data.lastTransactionsKey;
-                    betSlipsFromKey = data.lastBetSlipsKey;
-                    
-                    for (var i = 0; i < data.betList.length; i++) {
-                        addBox(data.betList[i], "bet");
-                    }
-                    
-                    for (var i = 0; i < data.accountList.length; i++) {
-                        addBox(data.accountList[i], "new_account");
-                    }
-                    
-                    for (var i = 0; i < data.failedBetsList.length; i++) {
-                        addBox(data.failedBetsList[i], "failed_bet");
-                    }
-    			    
-                    for (var i = 0; i < data.transactionList.length; i++) {
-                        addBox(data.transactionList[i], "payrec");
-                    }
-    			}
-    			})
-            }, autoFetchMillis);
-        }
-    });
+    // Start listening for activity
+    window.setInterval(function () {
+        ABPIFY.ajax("GET", "/rest/instantaction?fromKey=" + -1 + "&type=ALL&betsFromKey=" + betsFromKey + "&accountsFromKey=" + accountsFromKey + "&failedBetsFromKey=" + failedBetsFromKey + "&transactionsFromKey=" + payrecsFromKey + "&betSlipsFromKey=" + betSlipsFromKey, null, function(data) {
+    		if (data) {
+                betsFromKey = data.lastBetsKey;
+                accountsFromKey = data.lastAccountsKey;
+                failedBetsFromKey = data.lastFailedBetsKey;
+                payrecsFromKey = data.lastTransactionsKey;
+                betSlipsFromKey = data.lastBetSlipsKey;
+                
+                for (var i = 0; i < data.betList.length; i++) {
+                    addBox(data.betList[i], "bet");
+                }
+                
+                for (var i = 0; i < data.accountList.length; i++) {
+                    addBox(data.accountList[i], "new_account");
+                }
+                
+                for (var i = 0; i < data.failedBetsList.length; i++) {
+                    addBox(data.failedBetsList[i], "failed_bet");
+                }
+    		    
+                for (var i = 0; i < data.transactionList.length; i++) {
+                    addBox(data.transactionList[i], "payrec");
+                }
+    		}
+        })
+    }, autoFetchMillis);
     
     // Add a box to the content section for the appropriate type (E.g. Bet, New account etc)
 	function addBox(data, type) {
@@ -226,8 +230,10 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
             case "failed_bet":
                 gradient = "bgred";
                 amount = data.unitStake;
-                contentLabel = "Failed";
-                contentSubLabel = "Bet";
+                contentLabel = "£" + amount;
+                contentSubLabel = "Failed Bet";
+                accountDescription = data.account.lastName + ", " + data.account.firstName;
+                description = data.description;
                 break;
             case "payrec" :
                 gradient = "bgbronze";
@@ -239,7 +245,6 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
                 break;
         }
 
-        
         // Use Mustache to populate the template
         var result = mustache.render(template, { 
             "background_gradient" : gradient,
@@ -256,7 +261,9 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
         
         // Add the result to the page
         content.prepend(result);
+        boxCount++;
         
+        // TODO Need to make this just one function that updates all times every X seconds or so.
         // Now start calculating the time since the item was created
         var justAdded = $("#content .box").first();
         var timeSection = justAdded.find(".right_footer_right");
@@ -291,15 +298,26 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
             setTimeout(arguments.callee, newTimeout);
         }, 0);
         
-        // Example of reading back data at a later stage
-        justAdded.click(function() {
-            console.log(justAdded.data("data").account.userName); 
-        });
-        
         // Check to see if we should be displaying this box
         boxFilter(justAdded);
 
-        // TODO If we have more than 500 items we need to start removing the older ones.
+        // Hide fields that are meant to be hidden
+        if ($("#showUsername").prop("checked")) {
+            justAdded.find(".account_username").show();
+        } else {
+            justAdded.find(".account_username").hide();
+        }
+        
+        if ($("#showAccountNumber").prop("checked")) {
+            justAdded.find(".account_number").show();
+        } else {
+            justAdded.find(".account_number").hide();
+        }
+
+        // If we have more than max row items we need to start removing the older ones. Note, once it's gone it's gone, if the max rows is increased it's too bad.
+        if (boxCount > +$("#max-rows").val()) {
+            $("#content .box").last().remove();
+        }
 	}
     
     // Handlers
@@ -350,6 +368,7 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
     });
     
     $("#max-stake").on("input", function() {
+        // Note: '+' is kind of short hand for parseInt
        var minStake = +$("#min-stake").val();
        var maxStake = +$("#max-stake").val(); 
        
@@ -360,6 +379,21 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
        boxFilter();
     });
     
+    $("#showUsername").click(function() {
+        $(".account_username").toggle();
+        localStorage.setItem("showUsername", $("#showUsername").prop("checked"));
+    });
+    
+    $("#showAccountNumber").click(function() {
+        $(".account_number").toggle();
+        localStorage.setItem("showAccountNumber", $("#showAccountNumber").prop("checked"));
+    });
+    
+    $("#max-rows").on("input", function() {
+       var maxRows = +$("#max-rows").val(); 
+       localStorage.setItem("maxRows", maxRows);
+    });
+    
     // When the back button is selected reload the filters to see what changed
     /*
 window.addEventListener("popstate", function(e) {
@@ -368,7 +402,7 @@ window.addEventListener("popstate", function(e) {
     });
 */
 
-    //ACCORDION BUTTON ACTION	
+    // Accordion buttons	
 	$('.accordionButton').click(function() {
 		$('.accordionContent').slideUp('normal');	
 		if ($(this).next().is(":hidden")) {
@@ -376,7 +410,7 @@ window.addEventListener("popstate", function(e) {
         } 
 	});
  
-	//HIDE THE DIVS ON PAGE LOAD	
+	// Hide all accordions to start with	
 	$(".accordionContent").hide();
   
 /*     $("#main-nav .accordionContent:first").slideDown('normal'); */
