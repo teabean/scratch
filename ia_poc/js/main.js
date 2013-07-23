@@ -8,6 +8,7 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
     setupFilters(query_params);
     setupSettings();
     
+    // Get the query params from the url
     function getQueryParams(qs) {
         qs = qs.split("+").join(" ");
         var params = {},
@@ -21,12 +22,25 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
         return params;
     }
     
+    // Sets up the filters in the slide out menu
     function setupFilters(params) {
         // Default to true if the param has not been specified
         $("#bets-check").prop("checked", params.bets === undefined ? true : params.bets === "true");
         $("#accounts-check").prop("checked", params.new_accounts === undefined ? true : params.new_accounts === "true");
         $("#payrecs-check").prop("checked", params.payrecs === undefined ? true : params.payrecs === "true");
         $("#failed-bets-check").prop("checked", params.failed_bets === undefined ? true : params.failed_bets === "true");
+        
+        // Min/Max stake
+        var minStake = params.min_stake;
+        var maxStake = params.max_stake;
+        
+        if (+minStake > +maxStake) {
+            minStake = maxStake;
+            updateHistory("min_stake", minStake);
+        }
+        
+        $("#min-stake").val(minStake);
+        $("#max-stake").val(maxStake);
         
         // Get Sports for sport filter
         ABPIFY.ajax("GET", "/rest/sports", null, function(data) {
@@ -64,38 +78,74 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
 
         // If we specify a specific box then just check filter against that box. Otherwise filter them all.
         if (singleBox == null) {
-            $("#content .box").each(function() {filter($(this))});
+            // Make sure everything is shown/hidden
+            $("#content .bet").each(function() {
+                showBox(showBets, $(this));
+                
+                // If we are showing bets we also want to check them against our bet filters
+                if (showBets) {
+                    checkBetFilters($(this));
+                }
+            });
+            
+            $("#content .new_account").each(function() {
+                showBox(showNewAccounts, $(this));
+            });
+            
+            $("#content .payrec").each(function() {
+                showBox(showPayrecs, $(this));
+            });
+            
+            $("#content .failed_bet").each(function() {
+                showBox(showFailedBets, $(this));
+            });
         } else {
-            filter(singleBox);
-        }
-        
-        function filter(box) {
-            var show = true;
-            var data = box.data("data");
+            var data = singleBox.data("data");
             var data_type = data.type;
             
             if (data_type === "bet") {
-                show = showBets;
+                showBox(showBets, singleBox);
                 
-                // Check bet sport
-                var sportChecked = $("#" + data.sportCode).prop("checked");
-                show &= sportChecked;
-                
-                if (show) {
-                    // Check the unit stake
-                    var minStake = $("#min-stake").val();
-                    var maxStake = $("#max-stake").val(); 
-                    
-                    if (minStake.length > 0 && maxStake.length > 0) {
-                        show = minStake <= data.unitStake && maxStake >= data.unitStake;
-                    }
+                if (showBets) {
+                    checkBetFilters(singleBox);
                 }
             } else if (data_type === "new_account") {
-                show = showNewAccounts;
+                showBox(showNewAccounts, singleBox);
             } else if (data_type === "payrec") {
-                show = showPayrecs;
+                showBox(showPayrecs, singleBox);
             } else if (data_type === "failed_bet") {
-                show = showFailedBets;
+                showBox(showFailedBets, singleBox);
+            }
+        }
+        
+        function showBox(show, box) {
+            if (show) {
+                box.show();
+            } else {
+                box.hide();
+            } 
+        }
+        
+        function checkBetFilters(box) {
+            // Check bet sport
+            var show = true;
+            var data = box.data("data");
+            
+            var sportChecked = $("#" + data.sportCode).prop("checked");
+            show &= sportChecked;
+            
+            if (show) {
+                // Check the unit stake
+                var minStake = $("#min-stake").val();
+                var maxStake = $("#max-stake").val(); 
+                
+                if (minStake.length == 0 && maxStake.length > 0) {
+                    show = data.unitStake <= +maxStake;
+                } else if (maxStake.lemgth == 0 && minStake.length > 0) {
+                    show = data.unitStake >= +minStake;
+                } else if (minStake.length > 0 && maxStake.length > 0) {
+                    show = +minStake <= data.unitStake && +maxStake >= data.unitStake;
+                }
             }
             
             if (show) {
@@ -191,7 +241,6 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
 	function addBox(data, type) {
     	// Store the type for later use
         data.type = type;
-        
 
         // Get the colour for the left hand box and the label descriptions
         var gradient = null;
@@ -266,37 +315,11 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
         // TODO Need to make this just one function that updates all times every X seconds or so.
         // Now start calculating the time since the item was created
         var justAdded = $("#content .box").first();
-        var timeSection = justAdded.find(".right_footer_right");
-        var bet_create_date = data.createDate;
-
+        justAdded.addClass(type);
         justAdded.data("data", data);
-            
-        window.setTimeout(function() {
-            var date = new Date();
-            var seconds = Math.round((date.getTime() - new Date(bet_create_date).getTime()) / 1000);
-            // If date is from json --> new Date(bet_create_date).getTime()
-            var minutes = 59;
-            
-            var prettyDate = seconds + "s ago";
-            
-            // We can play with this timeout to make things easier on the cpu
-            var newTimeout = 15000;
-            
-            if (seconds > 59) {
-              minutes = Math.floor(seconds / 60);
-              prettyDate = minutes + "m ago";
-              newTimeout = 20000;
-            }  
-            
-            if (minutes > 59 && seconds > 59) {
-              var hours = Math.floor(minutes / 60);
-              prettyDate = hours + "h ago";
-              newTimeout = 60000;
-            }
-      
-            timeSection.html("About " + prettyDate);
-            setTimeout(arguments.callee, newTimeout);
-        }, 0);
+        
+        // Update time
+        updateTime(justAdded);
         
         // Check to see if we should be displaying this box
         boxFilter(justAdded);
@@ -319,6 +342,43 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
             $("#content .box").last().remove();
         }
 	}
+	
+	// Start a timer that updates all the times 
+	var timeCheck = 15000;
+	window.setTimeout(function() {
+	     $("#content .box").each(function() {
+             updateTime($(this));
+	     });
+	     
+	    setTimeout(arguments.callee, timeCheck);
+	}, timeCheck);
+	
+	function updateTime(box) {
+    	var created_date = box.data("data").createDate;
+	     // Removing the timezone for now, not sure why it doesn't like it in when parsing?
+	     console.log(box.data("data"));
+	     created_date = created_date.substring(0, created_date.indexOf("+"));
+/*     	     Date.parse(created_date, "yyyy-MM-dd'T'HH:mm:ss.SSS") */
+	     
+        var date = new Date();
+        var seconds = Math.round((date.getTime() - new Date(created_date).getTime()) / 1000);
+        var minutes = 59;
+        
+        var prettyDate = "Less than 1m ago";
+        
+        if (seconds > 59) {
+          minutes = Math.floor(seconds / 60);
+          prettyDate = "About " + minutes + "m ago";
+        }  
+        
+        if (minutes > 59 && seconds > 59) {
+          var hours = Math.floor(minutes / 60);
+          prettyDate = "About " + hours + "h ago";
+        }
+  
+        box.find(".right_footer_right").html(prettyDate);
+	}
+	
     
     // Handlers
     $("#bets-check").click(function() {
@@ -362,8 +422,10 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
        // Don't allow the min stake to go above the max stake
        if (minStake > maxStake) {
            $("#max-stake").val(minStake);
+           updateHistory("max_stake", minStake);
        }
        
+       updateHistory("min_stake", minStake);
        boxFilter();
     });
     
@@ -374,8 +436,11 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
        
        // Don't allow the max stake to go below the min stake
        if (maxStake < minStake) {
-          $("#min-stake").val(maxStake); 
+            $("#min-stake").val(maxStake); 
+            updateHistory("min_stake", maxStake);
        }
+       
+       updateHistory("max_stake", maxStake);
        boxFilter();
     });
     
