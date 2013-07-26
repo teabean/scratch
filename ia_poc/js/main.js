@@ -101,7 +101,7 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
             });
         } else {
             var data = singleBox.data("data");
-            var data_type = data.type;
+            var data_type = data.instantActionType;
             
             if (data_type === "bet") {
                 showBox(showBets, singleBox);
@@ -109,7 +109,7 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
                 if (showBets) {
                     checkBetFilters(singleBox);
                 }
-            } else if (data_type === "new_account") {
+            } else if (data_type === "account") {
                 showBox(showNewAccounts, singleBox);
             } else if (data_type === "payrec") {
                 showBox(showPayrecs, singleBox);
@@ -205,12 +205,13 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
     var payrecsFromKey = -1;
     var betSlipsFromKey = -1;
     
+    
     // Fetch Instant Action Data
     var autoFetchMillis = 5000;
     
     // Start listening for activity
     window.setInterval(function () {
-        ABPIFY.ajax("GET", "/rest/instantaction?fromKey=" + -1 + "&type=ALL&betsFromKey=" + betsFromKey + "&accountsFromKey=" + accountsFromKey + "&failedBetsFromKey=" + failedBetsFromKey + "&transactionsFromKey=" + payrecsFromKey + "&betSlipsFromKey=" + betSlipsFromKey, null, function(data) {
+        ABPIFY.ajax("GET", "/rest/instantaction?fromKey=" + -1 + "&type=ALL&betsFromKey=" + betsFromKey + "&accountsFromKey=" + accountsFromKey + "&failedBetsFromKey=" + failedBetsFromKey + "&transactionsFromKey=" + payrecsFromKey + "&betSlipsFromKey=" + betSlipsFromKey + "&allMaxResults=" + +$("#max-rows").val(), null, function(data) {
     		if (data) {
                 betsFromKey = data.lastBetsKey;
                 accountsFromKey = data.lastAccountsKey;
@@ -218,29 +219,26 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
                 payrecsFromKey = data.lastTransactionsKey;
                 betSlipsFromKey = data.lastBetSlipsKey;
                 
-                for (var i = 0; i < data.betList.length; i++) {
-                    addBox(data.betList[i], "bet");
-                }
-                
-                for (var i = 0; i < data.accountList.length; i++) {
-                    addBox(data.accountList[i], "new_account");
-                }
-                
-                for (var i = 0; i < data.failedBetsList.length; i++) {
-                    addBox(data.failedBetsList[i], "failed_bet");
-                }
-    		    
-                for (var i = 0; i < data.transactionList.length; i++) {
-                    addBox(data.transactionList[i], "payrec");
+                for (var i = 0; i < data.allItems.length; i++) {
+                    if (data.allItems[i].instantActionType === "betslip") {
+                        
+                    } else {
+                        addBox(data.allItems[i]);
+                    }
                 }
     		}
         })
     }, autoFetchMillis);
     
     // Add a box to the content section for the appropriate type (E.g. Bet, New account etc)
-	function addBox(data, type) {
+	function addBox(data) {
     	// Store the type for later use
-        data.type = type;
+        var type = data.instantActionType;
+        
+        if (type === undefined) {
+            // It's an account
+            type = "account";
+        }
 
         // Get the colour for the left hand box and the label descriptions
         var gradient = null;
@@ -269,7 +267,7 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
                 accountDescription = data.accountDescription;
                 description = data.description;
                 break;
-            case "new_account":
+            case "account":
                 gradient = "bggreen";
                 contentLabel = "New";
                 contentSubLabel = "Account";
@@ -300,7 +298,7 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
             "left_content" : contentLabel, 
             "left_sub_label" : contentSubLabel,
             "account_description" : accountDescription, 
-            "account_username" : data.userName ? data.userName.toLowerCase() : data.account.userName.toLowerCase(),
+            "account_username" : data.userName ? data.userName.toLowerCase() : (data.username ? data.username.toLowerCase() : data.account.userName.toLowerCase()),
             "account_number" : data.accountNumber,
             "description" : description,
             "right_footer_left" : type === "bet" ? "Potential Win £" + data.potentialWin : "",
@@ -355,28 +353,35 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
 	
 	function updateTime(box) {
     	var created_date = box.data("data").createDate;
-	     // Removing the timezone for now, not sure why it doesn't like it in when parsing?
-	     console.log(box.data("data"));
-	     created_date = created_date.substring(0, created_date.indexOf("+"));
-/*     	     Date.parse(created_date, "yyyy-MM-dd'T'HH:mm:ss.SSS") */
-	     
-        var date = new Date();
-        var seconds = Math.round((date.getTime() - new Date(created_date).getTime()) / 1000);
-        var minutes = 59;
-        
-        var prettyDate = "Less than 1m ago";
-        
-        if (seconds > 59) {
-          minutes = Math.floor(seconds / 60);
-          prettyDate = "About " + minutes + "m ago";
-        }  
-        
-        if (minutes > 59 && seconds > 59) {
-          var hours = Math.floor(minutes / 60);
-          prettyDate = "About " + hours + "h ago";
-        }
-  
-        box.find(".right_footer_right").html(prettyDate);
+    	
+    	if (created_date == null) {
+        	// Account have createdDate instead :@
+        	created_date = box.data("data").createdDate;
+    	}
+    	
+    	if (created_date != null) {
+    	     // Removing the timezone for now, not sure why it doesn't like it in when parsing?
+    	     created_date = created_date.substring(0, created_date.indexOf("+"));
+    /*     	     Date.parse(created_date, "yyyy-MM-dd'T'HH:mm:ss.SSS") */
+    	     
+            var date = new Date();
+            var seconds = Math.round((date.getTime() - new Date(created_date).getTime()) / 1000);
+            var minutes = 59;
+            
+            var prettyDate = "Less than 1m ago";
+            
+            if (seconds > 59) {
+              minutes = Math.floor(seconds / 60);
+              prettyDate = "About " + minutes + "m ago";
+            }  
+            
+            if (minutes > 59 && seconds > 59) {
+              var hours = Math.floor(minutes / 60);
+              prettyDate = "About " + hours + "h ago";
+            }
+      
+            box.find(".right_footer_right").html(prettyDate);
+        } 
 	}
 	
     
