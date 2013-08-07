@@ -88,7 +88,7 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
                 }
             });
             
-            $("#content .new_account").each(function() {
+            $("#content .account").each(function() {
                 showBox(showNewAccounts, $(this));
             });
             
@@ -254,14 +254,17 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
             case "bet":
                 amount = data.unitStake;
                 if (amount < 5.01) {
-                    gradient = "bgpink";
+                    gradient = "bggrey";
                 } else if (amount < 15.01) {
-                    gradient = "bglightblue2";
+                    gradient = "bggrey";
                 } else if (amount < 25.01) {
-                    gradient = "bgorangey";
+                    gradient = "bggrey";
                 } else {
                     gradient = "bggold";
                 }
+                
+                gradient = "bggrey";
+                
                 contentLabel = "£" + amount;
                 contentSubLabel = data.transactionSubTypeDescription;
                 accountDescription = data.accountDescription;
@@ -310,14 +313,12 @@ define(["jquery", "mustache", "text!../templates/box_template.html", "abpify"], 
         content.prepend(result);
         boxCount++;
         
-        // TODO Need to make this just one function that updates all times every X seconds or so.
-        // Now start calculating the time since the item was created
         var justAdded = $("#content .box").first();
         justAdded.addClass(type);
         justAdded.data("data", data);
         
         // Update time
-        updateTime(justAdded);
+        updateTime(justAdded);      
         
         // Check to see if we should be displaying this box
         boxFilter(justAdded);

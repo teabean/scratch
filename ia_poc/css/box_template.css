@@ -201,6 +201,10 @@
     background: -webkit-linear-gradient(top, rgba(254,204,177,1) 0%,rgba(241,116,50,1) 50%,rgba(234,85,7,1) 51%,rgba(251,149,94,1) 100%)
 }
 
+.bggrey {
+    background: -webkit-linear-gradient(top, rgba(181,189,200,1) 0%,rgba(130,140,149,1) 36%,rgba(40,52,59,1) 100%); 
+}
+
 /* We are too small, do a switcheroo */
 @media all and (max-width: 321px) {
     .box {
